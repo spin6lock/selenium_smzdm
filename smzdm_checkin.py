@@ -18,4 +18,5 @@ username.send_keys(USERNAME)
 password.send_keys(PASSWORD)
 login_button.click()
 
-
+checkin_button = browser.find_element_by_id("user_info_tosign")
+checkin_button.click()
