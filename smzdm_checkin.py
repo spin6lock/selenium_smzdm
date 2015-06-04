@@ -2,6 +2,7 @@
 #encoding=utf8
 
 from selenium import webdriver
+from selenium.webdriver.support.wait import WebDriverWait
 from config import *
 
 browser = webdriver.Firefox()
@@ -18,7 +19,7 @@ username.send_keys(USERNAME)
 password.send_keys(PASSWORD)
 login_button.click()
 
+WebDriverWait(browser, 10).until(
+                lambda x: x.find_element_by_id('user_info_tosign').is_displayed())
 checkin_button = browser.find_element_by_id("user_info_tosign")
-while not checkin_button:
-	checkin_button = browser.find_element_by_id("user_info_tosign")
 checkin_button.click()
