@@ -23,3 +23,5 @@ WebDriverWait(browser, 10).until(
                 lambda x: x.find_element_by_id('user_info_tosign').is_displayed())
 checkin_button = browser.find_element_by_id("user_info_tosign")
 checkin_button.click()
+
+browser.quit()
