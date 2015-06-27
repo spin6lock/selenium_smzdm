@@ -1,1 +1,1 @@
-a simple tool use selenium and Firefox to auto checkin smzdm.com
+a simple tool use selenium and PhantomJS to auto checkin smzdm.com
