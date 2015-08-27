@@ -1,0 +1,5 @@
+USERNAME="yourusername"
+PASSWORD="yourpassword"
+SCREENSHOT_PATH="your_path_to_png"
+WAITTIME_BEFORE_CLICK = 30
+WAITTIME_AFTER_CLICK = 30

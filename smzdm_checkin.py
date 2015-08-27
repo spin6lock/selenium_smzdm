@@ -30,12 +30,14 @@ username.send_keys(USERNAME)
 password.send_keys(PASSWORD)
 login_button.click()
 
-WebDriverWait(browser, 10).until(
+WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
             lambda x: len(x.find_element_by_id("user_info_score").text) > 0
         )
+WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
+        ajax_complete, "timeout waiting for page to load")
 checkin_button = browser.find_element_by_id("user_info_tosign")
 checkin_button.click()
-WebDriverWait(browser, 10).until(
+WebDriverWait(browser, WAITTIME_AFTER_CLICK).until(
         ajax_complete, "timeout waiting for page to load")
 text_info = browser.find_element_by_id("user_info_tosign").text
 output_filename = join(dirname(abspath(__file__)), "ret")
