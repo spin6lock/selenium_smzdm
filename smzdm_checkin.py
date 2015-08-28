@@ -7,6 +7,7 @@ import selenium
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import WebDriverException
+import requests
 from config import *
 
 
@@ -16,6 +17,16 @@ def ajax_complete(driver):
     except WebDriverException:
         pass
 
+def send_warning_mail():
+    return requests.post(
+        MAILGUN_API_URL,
+        auth=("api", MAILGUN_KEY),
+        files=[("inline", open(SCREENSHOT_PATH))],
+        data={"from": MAILFROM,
+              "to": MAILTO,
+              "subject": MAIL_TITLE,
+              "text": "Testing some Mailgun awesomness!",
+              "html": '<html>Inline image here: <img src="cid:smzdm.png"></html>'})
 
 def checkin():
     output_filename = join(dirname(abspath(__file__)), "ret")
@@ -23,10 +34,12 @@ def checkin():
         lines = fh.readlines()
         line = lines[-1]
         date, _, result = line.split()
-        if result.find("已签到") != -1 and date == datetime.datetime.strftime(
-                datetime.datetime.now().date(), "%Y-%m-%d"):
-            print "已签到"
-            return
+        if date == datetime.datetime.strftime(
+            datetime.datetime.now().date(), "%Y-%m-%d"):
+            if result.find("已签到") != -1:
+                return
+            else:
+                send_warning_mail()
     browser = webdriver.PhantomJS(service_args=['--load-images=no'])
     browser.set_window_size(1024, 768)
     browser.get("http://www.smzdm.com")
