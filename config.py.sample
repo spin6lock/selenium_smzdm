@@ -8,3 +8,4 @@ MAILGUN_KEY = "mailgun key-xxxxxx"
 MAILFROM = "smzdm_checkin <your email>"
 MAILTO = "your mailbox"
 MAIL_TITLE = "smzdm checkin failed"
+DEBUG=True

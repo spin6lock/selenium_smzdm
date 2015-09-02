@@ -7,40 +7,36 @@ import selenium
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 import requests
 from config import *
-
-
-def ajax_complete(driver):
-    try:
-        return 0 == driver.execute_script("return jQuery.active")
-    except WebDriverException:
-        pass
 
 def send_warning_mail():
     return requests.post(
         MAILGUN_API_URL,
         auth=("api", MAILGUN_KEY),
         files=[("inline", open(SCREENSHOT_PATH))],
-        data={"from": MAILFROM,
-              "to": MAILTO,
-              "subject": MAIL_TITLE,
-              "text": "Testing some Mailgun awesomness!",
-              "html": '<html>Inline image here: <img src="cid:smzdm.png"></html>'})
+        data={
+            "from": MAILFROM,
+            "to": MAILTO,
+            "subject": MAIL_TITLE,
+            "text": "Testing some Mailgun awesomness!",
+            "html": '<html>Inline image here: <img src="cid:smzdm.png"></html>'
+        })
 
 def send_simple_mail(content):
     return requests.post(
         MAILGUN_API_URL,
         auth=("api", MAILGUN_KEY),
-        data={"from": MAILFROM,
-              "to": MAILTO,
-              "subject": MAIL_TITLE,
-              "text": content,
-              },
-        )
+        data={
+            "from": MAILFROM,
+            "to": MAILTO,
+            "subject": MAIL_TITLE,
+            "text": content,
+        }, )
 
-
-def checkin():
+def has_checkin():
     output_filename = join(dirname(abspath(__file__)), "ret")
     with open(output_filename, "r") as fh:
         lines = fh.readlines()
@@ -49,9 +45,16 @@ def checkin():
         if date == datetime.datetime.strftime(
             datetime.datetime.now().date(), "%Y-%m-%d"):
             if result.find("已签到") != -1:
-                return
+                return True
             else:
                 send_warning_mail()
+                return False
+
+
+def checkin():
+    output_filename = join(dirname(abspath(__file__)), "ret")
+    if not DEBUG and has_checkin():
+        return
     browser = webdriver.PhantomJS(service_args=['--load-images=no'])
     browser.set_window_size(1024, 768)
     browser.get("http://www.smzdm.com")
@@ -60,7 +63,9 @@ def checkin():
         element = browser.find_element_by_id("user_info_tosign")
         element.click()
 
-        browser.switch_to_frame("zhiyou_login_window_iframe")
+        WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
+            EC.frame_to_be_available_and_switch_to_it(
+                "zhiyou_login_window_iframe"))
         username = browser.find_element_by_id("username")
         password = browser.find_element_by_id("password")
         login_button = browser.find_element_by_id("login_submit")
@@ -70,23 +75,24 @@ def checkin():
         login_button.click()
 
         WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
-            lambda x: len(x.find_element_by_id("user_info_score").text) > 0)
-        WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
-            ajax_complete, "timeout waiting for page to load")
+            EC.text_to_be_present_in_element(
+                (By.ID, "user_info_tosign"), u"签到"))
         checkin_button = browser.find_element_by_id("user_info_tosign")
         checkin_button.click()
         WebDriverWait(browser, WAITTIME_AFTER_CLICK).until(
-            ajax_complete, "timeout waiting for page to load")
+            EC.text_to_be_present_in_element(
+                (By.ID, "user_info_tosign"), u"已签到"),
+            "timeout waiting for page to load")
         text_info = browser.find_element_by_id("user_info_tosign").text
         with open(output_filename, "a") as fh:
-            fh.write(str(datetime.datetime.now()) + "\t" + text_info.encode("utf8")
-                    + "\n")
+            fh.write(str(datetime.datetime.now()) + "\t" + text_info.encode(
+                "utf8") + "\n")
         browser.save_screenshot(SCREENSHOT_PATH)
-
-        browser.quit()
     except selenium.common.exceptions.NoSuchElementException, err:
         print err
-        #send_simple_mail(err)
+        send_simple_mail(err)
+    finally:
+        browser.quit()
 
 
 checkin()
