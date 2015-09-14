@@ -49,7 +49,8 @@ def has_checkin():
             else:
                 send_warning_mail()
                 return False
-
+        else:
+            return False
 
 def checkin():
     output_filename = join(dirname(abspath(__file__)), "ret")
