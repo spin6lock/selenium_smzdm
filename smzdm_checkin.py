@@ -12,6 +12,7 @@ from selenium.webdriver.common.by import By
 import requests
 from config import *
 
+
 def send_warning_mail():
     return requests.post(
         MAILGUN_API_URL,
@@ -25,6 +26,7 @@ def send_warning_mail():
             "html": '<html>Inline image here: <img src="cid:smzdm.png"></html>'
         })
 
+
 def send_simple_mail(content):
     return requests.post(
         MAILGUN_API_URL,
@@ -35,6 +37,7 @@ def send_simple_mail(content):
             "subject": MAIL_TITLE,
             "text": content,
         }, )
+
 
 def has_checkin():
     output_filename = join(dirname(abspath(__file__)), "ret")
@@ -51,6 +54,7 @@ def has_checkin():
                 return False
         else:
             return False
+
 
 def checkin():
     output_filename = join(dirname(abspath(__file__)), "ret")
@@ -75,9 +79,6 @@ def checkin():
         password.send_keys(PASSWORD)
         login_button.click()
 
-        WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
-            EC.text_to_be_present_in_element(
-                (By.ID, "user_info_tosign"), u"签到"))
         checkin_button = browser.find_element_by_id("user_info_tosign")
         checkin_button.click()
         WebDriverWait(browser, WAITTIME_AFTER_CLICK).until(
@@ -89,9 +90,12 @@ def checkin():
             fh.write(str(datetime.datetime.now()) + "\t" + text_info.encode(
                 "utf8") + "\n")
         browser.save_screenshot(SCREENSHOT_PATH)
-    except selenium.common.exceptions.NoSuchElementException, err:
+    except selenium.common.exceptions.WebDriverException, err:
+        page_source_file = join(dirname(abspath(__file__)), "page_source")
         print err
         send_simple_mail(err)
+        with open(page_source_file, "w") as fout:
+            fout.write(browser.page_source.encode("utf-8"))
     finally:
         browser.quit()
 
