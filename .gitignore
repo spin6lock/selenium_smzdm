@@ -3,3 +3,5 @@ config.pyc
 ghostdriver.log
 smzdm.png
 ret
+checkin_err
+page_source
