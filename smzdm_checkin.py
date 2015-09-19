@@ -9,6 +9,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+import traceback
 import requests
 from config import *
 
@@ -98,8 +99,10 @@ def checkin():
         browser.save_screenshot(SCREENSHOT_PATH)
     except selenium.common.exceptions.WebDriverException, err:
         page_source_file = join(dirname(abspath(__file__)), "page_source")
+        tb = traceback.format_exc()
         print err
-        send_simple_mail(err)
+        print tb
+        send_simple_mail(err + "\n" + tb)
         with open(page_source_file, "w") as fout:
             fout.write(browser.page_source.encode("utf-8"))
     finally:
