@@ -65,6 +65,10 @@ def checkin():
     browser.get("http://www.smzdm.com")
 
     try:
+        WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
+            EC.element_to_be_clickable((By.ID, "user_info_tosign")),
+            "timeout waiting for login button to load")
+
         element = browser.find_element_by_id("user_info_tosign")
         element.click()
 
