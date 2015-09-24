@@ -102,7 +102,7 @@ def checkin():
         tb = traceback.format_exc()
         print err
         print tb
-        send_simple_mail(err + "\n" + tb)
+        send_simple_mail(str(err) + "\n" + tb)
         with open(page_source_file, "w") as fout:
             fout.write(browser.page_source.encode("utf-8"))
     finally:
