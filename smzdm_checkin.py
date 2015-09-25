@@ -9,6 +9,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
 import traceback
 import requests
 from config import *
@@ -60,7 +62,9 @@ def checkin():
     output_filename = join(dirname(abspath(__file__)), "ret")
     if not DEBUG and has_checkin():
         return
-    browser = webdriver.PhantomJS(service_args=['--load-images=no'])
+    dcap = dict(DesiredCapabilities.PHANTOMJS)
+    dcap["phantomjs.page.settings.userAgent"] = USER_AGENT
+    browser = webdriver.PhantomJS(service_args=['--load-images=no'], desired_capabilities=dcap)
     browser.set_window_size(1024, 768)
     browser.get("http://www.smzdm.com")
 
