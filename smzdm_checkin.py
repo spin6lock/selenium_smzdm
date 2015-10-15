@@ -15,7 +15,7 @@ import traceback
 import requests
 from config import *
 
-def send_warning_mail():
+def send_warning_mail(content):
     return requests.post(
         MAILGUN_API_URL,
         auth=("api", MAILGUN_KEY),
@@ -24,7 +24,7 @@ def send_warning_mail():
             "from": MAILFROM,
             "to": MAILTO,
             "subject": MAIL_TITLE,
-            "text": "Testing some Mailgun awesomness!",
+            "text": content,
             "html": '<html>Inline image here: <img src="cid:smzdm.png"></html>'
         })
 
@@ -93,7 +93,7 @@ def checkin():
             "timeout waiting for checkin button to load")
         WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
             EC.element_to_be_clickable((By.ID, "navBar_login_Info")),
-            "timeout waiting for checkin button to load")
+            "timeout waiting for navBar to load")
         checkin_button = browser.find_element_by_id("user_info_tosign")
         checkin_button.click()
         WebDriverWait(browser, WAITTIME_AFTER_CLICK).until(
@@ -110,7 +110,8 @@ def checkin():
         tb = traceback.format_exc()
         print err
         print tb
-        send_simple_mail(str(err) + "\n" + tb)
+        browser.save_screenshot(SCREENSHOT_PATH)
+        send_warning_mail(str(err) + "\n" + tb)
         with open(page_source_file, "w") as fout:
             fout.write(browser.page_source.encode("utf-8"))
     finally:
