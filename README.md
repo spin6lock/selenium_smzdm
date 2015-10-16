@@ -4,3 +4,5 @@ Dependancy:
 
     * requests
     *  mailgun service
+
+Deprecated
