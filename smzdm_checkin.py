@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #encoding=utf8
 
-from os.path import join, dirname, abspath
+from os.path import join, dirname, abspath, isfile
 import datetime
 import selenium
 from selenium import webdriver
@@ -43,6 +43,7 @@ def send_simple_mail(content):
 
 def has_checkin():
     output_filename = join(dirname(abspath(__file__)), "ret")
+    if not isfile(output_filename): return False
     with open(output_filename, "r") as fh:
         lines = fh.readlines()
         line = lines[-1]
