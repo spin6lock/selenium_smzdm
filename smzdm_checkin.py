@@ -87,16 +87,14 @@ def checkin():
         username.send_keys(USERNAME)
         password.send_keys(PASSWORD)
         login_button.click()
-
+        print("click login")
         WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
             EC.text_to_be_present_in_element(
                 (By.ID, "user_info_tosign"), u"签到"),
             "timeout waiting for checkin button to load")
-        WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
-            EC.element_to_be_clickable((By.ID, "navBar_login_Info")),
-            "timeout waiting for navBar to load")
         checkin_button = browser.find_element_by_id("user_info_tosign")
         checkin_button.click()
+        print("click checkin")
         WebDriverWait(browser, WAITTIME_AFTER_CLICK).until(
             EC.text_to_be_present_in_element(
                 (By.ID, "user_info_tosign"), u"已签到"),
