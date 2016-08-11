@@ -16,18 +16,18 @@ import requests
 from config import *
 
 def send_warning_mail(content):
-    return requests.post(
-        MAILGUN_API_URL,
-        auth=("api", MAILGUN_KEY),
-        files=[("inline", open(SCREENSHOT_PATH))],
-        data={
-            "from": MAILFROM,
-            "to": MAILTO,
-            "subject": MAIL_TITLE,
-            "text": content,
-            "html": '<html>Inline image here: <img src="cid:smzdm.png"></html>'
-        })
-
+    if not DEBUG:
+        return requests.post(
+            MAILGUN_API_URL,
+            auth=("api", MAILGUN_KEY),
+            files=[("inline", open(SCREENSHOT_PATH))],
+            data={
+                "from": MAILFROM,
+                "to": MAILTO,
+                "subject": MAIL_TITLE,
+                "text": content,
+                "html": '<html>Inline image here: <img src="cid:smzdm.png"></html>'
+            })
 
 def send_simple_mail(content):
     return requests.post(
@@ -67,19 +67,21 @@ def checkin():
     dcap["phantomjs.page.settings.userAgent"] = USER_AGENT
     browser = webdriver.PhantomJS(service_args=['--load-images=no'], desired_capabilities=dcap)
     browser.set_window_size(1024, 768)
-    browser.get("http://www.smzdm.com")
+    browser.get("http://www.smzdm.com/new/")
 
+    login_button_tag = "J_login_trigger"
+    login_iframe_tag = "J_login_iframe"
+    checkin_button_tag = "J_punch"
     try:
         WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
-            EC.element_to_be_clickable((By.ID, "user_info_tosign")),
+            EC.element_to_be_clickable((By.CLASS_NAME, login_button_tag)),
             "timeout waiting for login button to load")
-
-        element = browser.find_element_by_id("user_info_tosign")
+        element = browser.find_element_by_class_name(login_button_tag)
         element.click()
 
         WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
             EC.frame_to_be_available_and_switch_to_it(
-                "zhiyou_login_window_iframe"))
+                login_iframe_tag))
         username = browser.find_element_by_id("username")
         password = browser.find_element_by_id("password")
         login_button = browser.find_element_by_id("login_submit")
@@ -88,18 +90,27 @@ def checkin():
         password.send_keys(PASSWORD)
         login_button.click()
         print("click login")
+
+        WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
+            EC.invisibility_of_element_located((By.ID, "login_submit")),
+            "timeout waiting for login window disappear")
+
         WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
             EC.text_to_be_present_in_element(
-                (By.ID, "user_info_tosign"), u"签到"),
+                (By.CLASS_NAME, checkin_button_tag), u"签到"),
             "timeout waiting for checkin button to load")
-        checkin_button = browser.find_element_by_id("user_info_tosign")
+        checkin_button = browser.find_element_by_class_name(checkin_button_tag)
+
+        WebDriverWait(browser, WAITTIME_BEFORE_CLICK).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, checkin_button_tag)),
+            "timeout waiting for checkin button to be clickable")
         checkin_button.click()
         print("click checkin")
         WebDriverWait(browser, WAITTIME_AFTER_CLICK).until(
             EC.text_to_be_present_in_element(
-                (By.ID, "user_info_tosign"), u"已签到"),
+                (By.CLASS_NAME, checkin_button_tag), u"已签到"),
             "timeout waiting for page to load")
-        text_info = browser.find_element_by_id("user_info_tosign").text
+        text_info = browser.find_element_by_class_name(checkin_button_tag).text
         with open(output_filename, "a") as fh:
             fh.write(str(datetime.datetime.now()) + "\t" + text_info.encode(
                 "utf8") + "\n")
